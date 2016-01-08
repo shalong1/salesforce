@@ -1,0 +1,188 @@
+<apex:page controller="Sertifi2_0.ApptestServiceController" action="{!AttachPermanentSigners}" id="createRequestPage" docType="html-5.0">
+	<apex:includeScript value="{!URLFOR($Resource.Sertifi2_0__SertResources, '/js/jquery-1.11.1.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Sertifi2_0__SertResources, '/jQueryUI/jquery-ui.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.Sertifi2_0__SertResources, '/jQueryUI/jquery-ui.min.css')}"  />
+    <apex:pageMessages id="showmsg"></apex:pageMessages>
+    <apex:form id="createRequestForm">  
+    <style>
+        .none
+        {
+            display:: none;
+        }
+        .dateFormat { /* Salesforce adds a default value for today's date, hide it */
+    		display: none !important;
+        }
+    </style>
+    <script type="text/javascript">
+        var j$ = jQuery.noConflict();
+        var autoAdvanceError = {!AutoAdvanceError};
+        var autoAdvance = {!AutoAdvance};
+        var linkId = '{!linkID}';
+        var autoAdvanceRedirectUrl = '{!AutoAdvanceRedirectUrl}';
+    </script>
+<apex:pageBlock title="Sending For Signature" rendered="{!AutoAdvance}" id="autoAdvanceContainer">
+    <apex:pageMessages id="showmsgAutoAdvance"></apex:pageMessages>
+    <apex:image url="{!URLFOR($Resource.Sertifi2_0__SertResources,'images/loading.gif')}" rendered="{!!AutoAdvanceError}"/> <br />
+    <div>
+        {!AutoAdvanceStatus}
+    </div>
+    <div>
+        <apex:outputText id="autoAdvancedCancelMessage"></apex:outputText>
+        <apex:commandButton value="Return" action="{!ReturnToOriginalPage}" rendered="{!AutoAdvanceError}" />
+    </div>
+</apex:pageBlock>
+<apex:pageBlock title="Create Folder" rendered="{!!AutoAdvance}" id="blockCreateFolder">
+<table><tr><td>
+    <table cellspacing="2" cellpadding="2" >
+        <tr>
+            <td width="25%"><b><apex:outputLabel value="Folder Name" />:</b></td>
+            <td><apex:inputText value="{!FileName}" maxlength="80" /></td>
+        </tr>
+        <tr>
+            <td><b><apex:outputLabel value="Signing Method" />:</b></td>
+            <td>   
+                <apex:selectList value="{!SignMethod}" size="1">
+                    <apex:selectOptions value="{!SignMethods}"/>                
+                </apex:selectList>           
+            </td>
+        </tr>
+        <tr>
+            <td><apex:outputLabel rendered="{!ShowOptionalFieldsMessage}" value="Optional fields:" /></td>
+        </tr>
+        <tr>
+            <td><b><apex:outputLabel rendered="{!ShowEmailMessageField}" value="Email Invite Message:" /></b></td>
+            <td><apex:inputTextarea rendered="{!ShowEmailMessageField}" cols="60" rows="5" value="{!EmailMessage}" /></td>
+        </tr>
+        <tr>
+            <td><b><apex:outputLabel rendered="{!ShowInviteSigner}" value="Invite Signer Now?" /></b></td>
+            <td><apex:inputCheckbox rendered="{!ShowInviteSigner}" value="{!InviteSigner}"/></td>
+        </tr>
+        <tr class="none">
+            <td><b><apex:outputLabel rendered="{!ShowPasswordField}" value="File Password :" /></b></td>
+            <td><apex:inputText rendered="{!ShowPasswordField}" id="PasswordInputBox" value="{!Password}" /></td>
+        </tr>
+        <tr>
+            <td><b><apex:outputLabel rendered="{!ShowExpirationDate}" value="Expiration date:" /></b></td>
+            <td><apex:inputField rendered="{!ShowExpirationDate}" id="expirationDate" value="{!tempContract.Sertifi2_0__ExpirationDate__c}" showDatePicker="true"/></td>
+        </tr>
+    </table>
+</td></tr></table>
+</apex:pageBlock>
+<apex:pageBlock title="Add Participants" id="SignerBlock" rendered="{!!AutoAdvance}">
+    <div>
+    <apex:outputLabel rendered="{!ShowSignerFromContact}" value="Add from Contact" />
+    </div>
+    <div>
+            <apex:inputField rendered="{!ShowSignerFromContact}" value="{!tempSigner.Sertifi2_0__Contact__c}" required="false"/>
+            <apex:selectList rendered="{!ShowSignerFromContact}" size="1" value="{!SignType}">
+                <apex:selectOptions value="{!SignTypes}"/>
+            </apex:selectList>
+    </div>
+    <div>
+    <apex:outputLabel rendered="{!ShowSignerFromAddress}" value="Add as Email Address" />
+    </div>
+    <div>
+            <apex:inputField rendered="{!ShowSignerFromAddress}" value="{!tempSigner.Sertifi2_0__Email__c}" required="false"/>
+            <apex:selectList rendered="{!ShowSignerFromAddress}" size="1" value="{!SignTypeEmailAddress}">
+                <apex:selectOptions value="{!SignTypes}"/>
+            </apex:selectList>
+    </div>
+    <apex:commandButton value="Attach" action="{!AttachSigner}"/>
+    <table>
+           <tr>
+               <td><b>Name</b></td><td><b>Role</b></td><td><b>Email</b></td><td align="right"><b>Remove</b></td>
+           </tr>
+           <apex:repeat var="signers" value="{!AllSignerList}">
+           
+           <tr>    
+                <td><apex:outputText value="{!signers.signer.Contact__r.name}" /></td><td><apex:outputText value="{!signers.signer.Sertifi2_0__Level_Name__c}" /></td><td><apex:outputText value="{!signers.displayemail}" /></td>
+                <td align="right">
+                   <apex:inputcheckbox >
+                       <apex:actionsupport event="onclick" reRender="SignerBlock" action="{!removeContactContractJunction}">
+                           <apex:param value="{!signers.signer.id}" name="junctionID" />
+                       </apex:actionsupport>
+                   </apex:inputcheckbox>
+                </td>
+           </tr>
+           
+           </apex:repeat>
+           <tr>
+               <td></td>
+               <td> 
+                   <apex:facet name="footer" >
+                    <apex:outputPanel >
+                        <apex:commandButton action="{!cancel}" value="Cancel"/>
+                        <apex:commandButton action="{!getSignatureRequest}"  value="Next" id="btnNext" />
+                    </apex:outputPanel>
+                   </apex:facet>
+               </td>
+           </tr>
+    </table>
+</apex:pageBlock>
+    <apex:actionFunction name="jsCreateRequest" action="{!AutoAdvanceCreateRequest}" reRender="autoAdvanceContainer" oncomplete="jsAttachFilesInvoke();"></apex:actionFunction>
+    <apex:actionFunction name="jsAttachFiles" action="{!AutoAdvanceAttachFiles}" reRender="autoAdvanceContainer" oncomplete="jsRedirectInvoke();"></apex:actionFunction>
+    <apex:actionFunction name="jsCancel" action="{!RemoveRecordsOnFailure}" reRender="autoAdvancedCancelMessage"></apex:actionFunction>
+    <apex:actionFunction name="jsReturn" action="{!ReturnAfterSend}"></apex:actionFunction>
+</apex:form>
+    
+<script type="text/javascript">
+    var j$ = jQuery.noConflict();
+    var cancelCalled = false;
+    
+    j$(document).ready(function(){
+        //check for auto-advance
+        if (autoAdvance === true)
+        {
+            jsLog('Auto-advance set to true, calling create request');
+            jsCreateRequest(); 
+        }
+    });
+    
+    function jsRedirectInvoke()
+    {
+        jsLog('jsRedirectInvoke');
+        if (!autoAdvanceError)
+        {
+            jsReturn();
+        }
+        else
+            cleanupRecords();
+    }
+    
+    function cleanupRecords()
+    {
+        if (cancelCalled === false)
+        {
+            jsLog('Error encountered with auto-advance, deleting folder');
+            cancelCalled = true;
+            jsCancel(); //delete existing objects
+        }
+    }
+    
+    function redirectUnconditional()
+    {
+        window.location = autoAdvanceRedirectUrl;
+    }
+    
+    function jsAttachFilesInvoke()
+    {
+        jsLog('Attaching files');
+        if (!autoAdvanceError)
+            jsAttachFiles();
+        else
+            cleanupRecords();
+    }
+    
+    function jsLog(line)
+    {
+        if (window.console) 
+            console.log(line);
+    }
+    
+    function popup(url)
+    {
+        newwindow=window.open(url,'name','width=400,height=400,top=0,toolbar=no,personalbar=no,location=no,directories=no,statusbar=no,menubar=no,status=no,re sizable=yes,left=60,screenX=60,top=100,screenY=100');
+        if (window.focus){newwindow.focus()}
+    }
+</script>
+</apex:page>

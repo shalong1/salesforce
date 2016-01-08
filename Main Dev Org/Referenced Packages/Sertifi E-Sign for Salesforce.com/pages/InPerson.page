@@ -1,0 +1,42 @@
+<apex:page controller="Sertifi2_0.ApptestServiceController"  >
+    <apex:includeScript value="{!URLFOR($Resource.Sertifi2_0__SertResources, '/js/jquery-1.11.1.min.js')}"/>
+<apex:messages style="color: red; font-weight: bold; text-align: center;"/>
+<apex:form >
+<apex:pageBlock title="In-Person Signature">
+<table>
+    <tr>
+        <td>
+            <apex:outputLabel >
+                To host an In-Person signature please select the document and signer below. 
+                Please note: once complete the signer will receive an email with a copy of the signed document and “In-Person signature” will be noted in the audit trail. 
+            </apex:outputLabel>
+        </td>
+    </tr>
+    <tr>
+        <td><apex:selectList size="1" value="{!InPersonDoc}">
+            <apex:selectOptions value="{!SignableDocsOptionList}"/>
+            </apex:selectList>
+        </td>
+    </tr>
+    <tr>
+        <td><apex:selectList size="1" value="{!InPersonEmail}">
+            <apex:selectOptions value="{!SignerSelectOptionList}"/>
+            </apex:selectList>
+        </td>
+    </tr>
+    <tr>
+        <td align="center"><apex:commandButton value="Display Document for Signature" action="{!RedirectToInPerson}"/></td>        
+    </tr>
+</table>
+</apex:pageBlock>
+    <apex:actionFunction name="jsRedirectToInpersonAuto" action="{!RedirectToInPersonAuto}"></apex:actionFunction>
+</apex:form>
+    <script type="text/javascript">
+        var j$ = jQuery.noConflict();
+        var cancelCalled = false;
+        
+        j$(document).ready(function(){
+        	jsRedirectToInpersonAuto();
+        });
+    </script>
+</apex:page>

@@ -1,0 +1,19 @@
+<apex:page controller="Sertifi2_0.ApptestServiceController" >
+<apex:form >
+<table>
+    <tr>
+            <td style='vertical-align: middle;' width='35'>
+                <img src='https://www.sertifi.com/TestSite/images/accept_big.png' border='0' alt='' />
+            </td>
+            <td style='vertical-align: middle;'>
+                <p style="font-size: 150%">
+                    Your signature request has been sent.</p>
+
+            </td>
+        </tr>
+    <tr>
+        <td></td><td><apex:commandButton value="Return" action="{!ReturnAfterSend}"/></td>
+    </tr>
+</table>
+</apex:form>
+</apex:page>

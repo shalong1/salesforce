@@ -1,0 +1,128 @@
+<apex:page controller="Sertifi2_0.ApptestServiceController" action="{!ResetAttachFiles}">
+<apex:messages style="color: red; font-weight: bold; text-align: center;" id="showmsg"/>
+<apex:form >
+    <style>
+        .dateFormat { /* Salesforce adds a default value for today's date, hide it */
+    		display: none !important;
+        }
+    </style>
+<apex:pageBlock title="Add Content">
+
+<Apex:outputLabel value="Documents must be under 3 MB in size" style="font-size: 6pt;" />
+
+
+<table>
+    <tr><td colspan="3"><b><apex:outputLabel rendered="{!ShowHardDriveUpload}" value="Hard Drive" /></b></td></tr>
+    <tr>
+        <td><apex:inputfile rendered="{!ShowHardDriveUpload}" value="{!uploadDocument.body}" filename="{!uploadDocument.name}"/></td>
+        <td colspan="2"><apex:selectList size="1" rendered="{!ShowHardDriveUpload}" value="{!DocType}"><apex:selectOptions value="{!DocTypes}"/></apex:selectList></td>
+    </tr>
+    <tr><td colspan="3"><b><apex:outputLabel rendered="{!ShowSFFolderSelect}" value="Salesforce Folder" /></b></td></tr>
+    <tr>
+        <td>
+        <apex:selectList rendered="{!ShowSFFolderSelect}" size="1" value="{!folderDocumentID}">
+            <apex:selectOptions value="{!DocumentList}"/>
+        </apex:selectList>
+        </td>
+        <td colspan="2"><apex:selectList rendered="{!ShowSFFolderSelect}" size="1" value="{!folderDocType}"><apex:selectOptions value="{!DocTypes}"/></apex:selectList></td>
+    </tr>
+    <tr><td colspan="3"><b><apex:outputLabel rendered="{!ShowRelatedObjectSelect}" value="Related Notes and Attachments" /></b></td></tr>
+    <tr>
+        <td>
+        <apex:selectList rendered="{!ShowRelatedObjectSelect}" size="1" value="{!attachmentID}">
+            <apex:selectOptions value="{!AttachmentList}"/>
+        </apex:selectList>
+        </td>
+        <td colspan="2"><apex:selectList rendered="{!ShowRelatedObjectSelect}" size="1" value="{!attachmentDocType}"><apex:selectOptions value="{!DocTypes}"/></apex:selectList></td>
+    </tr>
+    <apex:outputPanel rendered="{!ShowPaymentOption}">
+        <tr><td colspan="3"><b><apex:outputLabel value="Add a Payment Request" /></b></td></tr>
+        <tr>
+            <td>
+                <apex:outputLabel value="Description:" />
+                <apex:inputText value="{!TempPayment.Name}" maxlength="100" />
+            </td>
+            <td>
+                <apex:outputLabel value="Amount:" />
+                <apex:inputText value="{!TempPayment.Sertifi2_0__Amount__c}" maxlength="50" />
+            </td>
+            <td>
+                <!--apex:outputLabel value="Recurrence:" />
+                <apex:selectList size="1" value="{!TempPayment.Recurrence__c}">
+                    <apex:selectOptions value="{!PaymentTypes}"/>
+                </apex:selectList-->
+            	<apex:outputLabel value="Date due:" />
+            	<apex:inputField value="{!TempPayment.Sertifi2_0__DueDate__c}" showDatePicker="true"/>
+            </td>
+        </tr>
+    </apex:outputPanel>
+    <br></br>
+    <tr>
+        <td colspan="3" align="left"><apex:commandButton id="UploadButton2" value="Add to Folder" action="{!UploadFile}" /></td>
+    </tr>
+</table>
+</apex:pageBlock>
+<apex:pageBlock title="Content Added To Folder" rendered="{!FolderContentAdded}">
+<table>
+    <tr>
+        <td colspan="3"><b><apex:outputLabel rendered="{!SigningDocAdded}" value="Signing Documents" /></b></td>
+    </tr>
+    <tr>
+    <td colspan="3">     
+     <apex:repeat value="{!SignDocumentList}" var="doc" id="signdocList" rendered="{!SigningDocAdded}">
+        <table style="width:100%;">
+            <td><apex:outputText value="{!doc.Sertifi2_0__Name__c}"/></td>
+            <td colspan="2">
+            	<a href="{!doc.EditLocationLink__c}" target="_blank">Edit Signing Locations / Prefill Document</a> 
+            </td>
+            <td>
+            <!-- Case 31418
+            <apex:commandButton action="{!DeleteDocument}" value="Delete" rerender="resultPanel" id="theButton" rendered="{!doc.Status__c == 'Open'}">
+                <apex:param id="param1" name="sertifiid" value="{!doc.Sertifi_ID__c}" AssignTo="{!DeleteDocumentID}"/>
+                <apex:param id="param2" name="sfid" value="{!doc.ID}" AssignTo="{!DeleteDocumentID}"/>
+            </apex:commandButton>
+            -->
+            </td>
+        </table>
+    </apex:repeat>             
+        
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3"><b><apex:outputLabel rendered="{!ReferenceDocAdded}" value="Reference Documents" /></b></td>
+    </tr>
+    <tr>
+    <td colspan="3">
+        <apex:repeat value="{!RefDocumentList}" var="doc" id="refdocList" rendered="{!ReferenceDocAdded}">
+            <apex:outputText value="{!doc.Sertifi2_0__Name__c}"/>
+        </apex:repeat>
+    </td>    
+    </tr>
+    <apex:outputPanel rendered="{!PaymentAdded}">
+        <tr>
+            <td colspan="3"><b><apex:outputLabel value="Payment Requests" /></b></td>
+        </tr>
+        <tr>
+            <th>Name</th>
+            <th>Amount</th>
+            <th>Date Due</th>
+        </tr>
+        <apex:repeat value="{!PaymentList}" var="payment" id="paymentList">
+            <tr>
+                <td><apex:outputText value="{!payment.Sertifi2_0__Description__c}"/></td>
+                <td><apex:outputText value="{0,number,$0.00}"><apex:param value="{!payment.Sertifi2_0__Amount__c}" /></apex:outputText></td>
+                <td><apex:outputText value="{0,date}"><apex:param value="{!payment.Sertifi2_0__DueDate__c}" /></apex:outputText></td>
+            </tr>
+        </apex:repeat>
+    </apex:outputPanel>
+</table>
+</apex:pageBlock>
+<table>
+    <tr>
+        <td><apex:outputLabel rendered="{!ShowApplySignature}" value="Apply My Signature: " /><apex:inputCheckbox rendered="{!ShowApplySignature}" value="{!ApplySignature}"/></td>
+        <td><apex:commandButton action="{!cancel}" value="Cancel"/></td>
+        <td align="center"><apex:commandButton value="Send for Signature" action="{!RedirectToObject}"/></td>              
+    </tr>
+</table>
+</apex:form>
+</apex:page>

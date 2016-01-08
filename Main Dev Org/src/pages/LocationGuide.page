@@ -1,0 +1,52 @@
+<apex:page id="page" controller="locationGuide_Controller" >
+	<apex:form id="form" >
+		<apex:sectionHeader title="Location Guide Request" />
+        <apex:pageMessages id="pageMessages" />
+        <apex:pageBlock >
+            <apex:pageBlockSection columns="2" title="InputArea" collapsible="false" >
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Latitude" />
+                    <apex:inputText value="{!requestLatitude}" style="width:50%" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Longitude" />
+                    <apex:inputText value="{!requestLongitude}" style="width:50%" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Range" />
+                    <apex:selectList value="{!selectedRange}" size="1" multiselect="false"  >
+                    	<apex:selectOptions value="{!items}"/>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                	<apex:commandButton value="Find Resturants" action="{!findTheResturants}" rendered="{!$CurrentPage.parameters.offline!='1'}"/>
+                </apex:pageBlockSectionItem>	
+            </apex:pageBlockSection>
+            
+            
+			
+			<apex:pageBlockSection columns="1" title="Resturant Results" rendered="{!deserializedResturants != null}" collapsible="false" >
+				<apex:pageBlockTable value="{!deserializedResturants}" var="i" >
+					
+					<apex:column headerValue="Name" style="width:25px;" >
+						<apex:outputText value="{!i['name']}" />
+					</apex:column>
+					<apex:column headerValue="Distance" style="width:75px;" >
+						<apex:outputText value="{!i['$distance']} (m)" />
+					</apex:column>
+					<apex:column headerValue="Lat/Long" style="width:25px;" >
+						<apex:outputText value="{!i['latitude']}, {!i['longitude']}" />
+					</apex:column>
+					
+					<apex:column headerValue="Action">
+						<!-- <apex:commandButton value="Create Invoice" action="/apex/CreateInvoiceFromPO?id={!po.id}" rendered="{!po.Status__c = 'Sent'}"/> -->
+						<apex:commandButton value="Dispatch Uber" onclick="alert('Uber has been dispatched to the location.');" rendered="{!i['$distance'] > 100}"/>﻿
+					</apex:column>﻿
+					
+					
+				</apex:pageBlockTable>
+			</apex:pageBlockSection>
+			
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
